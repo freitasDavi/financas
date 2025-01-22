@@ -1,7 +1,9 @@
 ﻿using Fintech.DTOs.Requests;
 using Fintech.Entities;
 using Fintech.Enums;
+using Fintech.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fintech.Controllers;
 
@@ -9,7 +11,7 @@ namespace Fintech.Controllers;
 [Route("[controller]")]
 public class DespesasController : ControllerBase
 {
-    private static List<Despesas> despesas = new List<Despesas>
+    private static List<Despesas> despesas3 = new List<Despesas>
     {
         new Despesas()
         {
@@ -40,16 +42,24 @@ public class DespesasController : ControllerBase
         },
     };
 
-    [HttpGet]
-    public ActionResult<List<Despesas>> Get()
+    private readonly DataContext _context;
+    public DespesasController(DataContext context)
     {
+        _context = context;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<List<Despesas>>> Get()
+    {
+        var despesas = await _context.Despesas.ToListAsync();
+        
         return Ok(despesas);
     }
 
     [HttpGet("{id}")]
-    public ActionResult<Despesas> Get([FromRoute] int id)
+    public async Task<ActionResult<Despesas>> Get([FromRoute] int id)
     {
-        var despesa = despesas.Find(x => x.Id == id);
+        var despesa = await _context.Despesas.FirstOrDefaultAsync(x => x.Id == id);
 
         if (despesa == null)
             return BadRequest("Expense not found!");
@@ -58,11 +68,10 @@ public class DespesasController : ControllerBase
     }
     
     [HttpPost]
-    public IActionResult Post([FromBody] NovaDespesaRequest request)
+    public async Task<IActionResult> Post([FromBody] NovaDespesaRequest request)
     {
         var despesa = new Despesas
         {
-            Id = despesas.Count + 1,
             Data = request.Data,
             Valor = request.Valor,
             Nome = request.Nome,
@@ -70,15 +79,16 @@ public class DespesasController : ControllerBase
             Origem = request.Origem,
         };
 
-        despesas.Add(despesa);
+        await _context.Despesas.AddAsync(despesa);
+        await _context.SaveChangesAsync();
         
         return Created();
     }
 
     [HttpPut("{id}")]
-    public IActionResult Update([FromRoute] int id, [FromBody] NovaDespesaRequest request)
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] NovaDespesaRequest request)
     {
-        var despesa = despesas.Find(d => d.Id == id);
+        var despesa = await _context.Despesas.FirstOrDefaultAsync(d => d.Id == id);
 
         if (despesa == null)
             return BadRequest("Despesa não encontrada.");
@@ -89,26 +99,22 @@ public class DespesasController : ControllerBase
         despesa.Origem = request.Origem;
         despesa.FormaDePagamento = request.FormaDePagamento;
 
-        despesas = despesas.Select(d =>
-        {
-            if (d.Id == id)
-                d = despesa;
-
-            return d;
-        }).ToList();
+        _context.Despesas.Update(despesa);
+        await _context.SaveChangesAsync();
 
         return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public IActionResult Delete([FromRoute] int id)
+    public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        var despesa = despesas.Find(d => d.Id == id);
+        var despesa = await _context.Despesas.FirstOrDefaultAsync(d => d.Id == id);
 
         if (despesa == null)
             return BadRequest("Expense not found!");
 
-        despesas.Remove(despesa);  
+        _context.Despesas.Remove(despesa);
+        await _context.SaveChangesAsync();
         
         return NoContent();
     }
