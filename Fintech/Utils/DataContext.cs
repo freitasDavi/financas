@@ -1,4 +1,5 @@
 ﻿using Fintech.Entities;
+using Fintech.Utils.Mappings;
 using Microsoft.EntityFrameworkCore;
 
 namespace Fintech.Utils;
@@ -6,6 +7,7 @@ namespace Fintech.Utils;
 public class DataContext : DbContext
 {
     public DbSet<Despesas> Despesas { get; set; }
+    public DbSet<User> Users { get; set; }
 
     public DataContext(DbContextOptions<DataContext> options) :  base(options)
     {
@@ -21,5 +23,7 @@ public class DataContext : DbContext
             entity.Property(e => e.Valor)
                 .HasColumnType("decimal(18, 2)");
         });
+
+        modelBuilder.ApplyConfiguration(new UserMap());
     }
 }
