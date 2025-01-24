@@ -1,6 +1,9 @@
 ﻿using Fintech.DTOs.Requests;
+using Fintech.DTOs.Responses;
 using Fintech.Entities;
 using Fintech.Enums;
+using Fintech.Exceptions;
+using Fintech.Interfaces;
 using Fintech.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,80 +17,94 @@ namespace Fintech.Controllers;
 public class DespesasController : ControllerBase
 {
     private readonly DataContext _context;
-    public DespesasController(DataContext context)
+    private readonly IDespesasService _despesasService;
+    
+    public DespesasController(DataContext context, IDespesasService despesasService)
     {
         _context = context;
+        _despesasService = despesasService;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<Despesas>>> Get()
     {
-        var despesas = await _context.Despesas.ToListAsync();
-        
-        return Ok(despesas);
+        try
+        {
+            var despesas = await _despesasService.GetAll();
+
+            return Ok(despesas);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Despesas>> Get([FromRoute] int id)
     {
-        var despesa = await _context.Despesas.FirstOrDefaultAsync(x => x.Id == id);
+        try
+        {
+            var despesa = await _despesasService.GetById(id);
 
-        if (despesa == null)
-            return BadRequest("Expense not found!");
-        
-        return Ok(despesa);
+            if (despesa is null)
+                return BadRequest("Expense not found!");
+            ;
+            return Ok(despesa);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
     
     [HttpPost]
     public async Task<IActionResult> Post([FromBody] NovaDespesaRequest request)
     {
-        var despesa = new Despesas
+        try
         {
-            Data = request.Data,
-            Valor = request.Valor,
-            Nome = request.Nome,
-            FormaDePagamento = request.FormaDePagamento,
-            Origem = request.Origem,
-            CodigoUsuario = 1,
-        };
-
-        await _context.Despesas.AddAsync(despesa);
-        await _context.SaveChangesAsync();
+            await _despesasService.Create(request);
         
-        return Created();
+            return Created();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] NovaDespesaRequest request)
     {
-        var despesa = await _context.Despesas.FirstOrDefaultAsync(d => d.Id == id);
-
-        if (despesa == null)
-            return BadRequest("Despesa não encontrada.");
+        try
+        {
+            await _despesasService.Update(id, request);
         
-        despesa.Data = request.Data;
-        despesa.Valor = request.Valor;
-        despesa.Nome = request.Nome;
-        despesa.Origem = request.Origem;
-        despesa.FormaDePagamento = request.FormaDePagamento;
-
-        _context.Despesas.Update(despesa);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+            return NoContent();    
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
-        var despesa = await _context.Despesas.FirstOrDefaultAsync(d => d.Id == id);
+        try
+        {
+            await _despesasService.Delete(id);
 
-        if (despesa == null)
-            return BadRequest("Expense not found!");
-
-        _context.Despesas.Remove(despesa);
-        await _context.SaveChangesAsync();
-        
-        return NoContent();
+            return NoContent();
+        }
+        catch (BadRequestException ex)
+        {
+            return BadRequest(new BadRequestResponse
+            {
+                Message = ex.Message,
+                Data = ex.Data,
+                Details = ex.Details
+            });
+        }
     }
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using Fintech.Interfaces;
+using Fintech.Middlewares;
 using Fintech.Services;
 using Fintech.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -40,7 +41,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IDespesasService, DespesasService>();
+builder.Services.AddTransient<TokenAuthenticationMiddleware>();
 
 var app = builder.Build();
 
@@ -53,8 +58,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseMiddleware<TokenAuthenticationMiddleware>();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

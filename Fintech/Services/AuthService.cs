@@ -13,13 +13,13 @@ namespace Fintech.Services;
 
 public class AuthService : IAuthService
 {
-    private readonly IConfiguration _configuration;
     private readonly DataContext _context;
+    private readonly ITokenService _tokenService;
 
-    public AuthService(IConfiguration configuration, DataContext context)
+    public AuthService(ITokenService tokenService, DataContext context)
     {
         _context = context;
-        _configuration = configuration;
+        _tokenService = tokenService;
     }
 
     public async Task Register(NewUserRequest request)
@@ -58,44 +58,11 @@ public class AuthService : IAuthService
         if (!ComparePassword(request.Password, user.Password))
             throw new BadHttpRequestException("Invalid username or password!");
 
-        var token = GenerateToken(user);
+        var token = _tokenService.GenerateToken(user);
 
         return token;
     }
     
-    private TokenResponse GenerateToken(User user)
-    {
-        var tokenSecret = Environment.GetEnvironmentVariable("TOKEN_SECRET");
-        var tokenAudience = Environment.GetEnvironmentVariable("TOKEN_AUDIENCE");
-        var tokenIssuer = Environment.GetEnvironmentVariable("TOKEN_ISSUER");
-
-        var claims = new List<Claim>()
-        {
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Sid, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Name)
-        };
-
-        var securityKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(tokenSecret ?? _configuration.GetSection("Token").GetValue<string>("Key")!)
-            );
-
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        var expiresIn = DateTime.Now.AddDays(1);
-
-        var tokenData = new JwtSecurityToken(
-            claims: claims,
-            issuer: tokenIssuer ?? _configuration.GetSection("Token").GetValue<string>("Issuer"),
-            audience: tokenIssuer ?? _configuration.GetSection("Token").GetValue<string>("Audience"),
-            expires: expiresIn,
-            signingCredentials: credentials
-            );
-
-        var token =  new JwtSecurityTokenHandler().WriteToken(tokenData);
-        
-        return new TokenResponse { Token = token, Expires = expiresIn };
-    }
-
     private string HashPassword(string password)
     {
         return BCrypt.Net.BCrypt.HashPassword(password);

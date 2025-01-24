@@ -1,4 +1,5 @@
-﻿using Fintech.DTOs.Requests;
+﻿using System.IdentityModel.Tokens.Jwt;
+using Fintech.DTOs.Requests;
 using Fintech.DTOs.Responses;
 
 namespace Fintech.Interfaces;
