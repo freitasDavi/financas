@@ -1,13 +1,11 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Fintech.DTOs.Requests;
+﻿using Fintech.DTOs.Requests;
 using Fintech.DTOs.Responses;
 using Fintech.Entities;
+using Fintech.Enums;
+using Fintech.Exceptions;
 using Fintech.Interfaces;
 using Fintech.Utils;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Fintech.Services;
 
@@ -27,10 +25,10 @@ public class AuthService : IAuthService
         var userExists = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (userExists is not null)
-            throw new BadHttpRequestException("User already exists");
+            throw new UnauthorizedException(EnumAuthError.EmailAlreadyExists);
         
         if (request.Password != request.ConfirmPassword)
-            throw new BadHttpRequestException("Passwords do not match");
+            throw new UnauthorizedException(EnumAuthError.LoginOrPassword);
         
         var hashedPassword = HashPassword(request.Password);
         
@@ -53,10 +51,10 @@ public class AuthService : IAuthService
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
         if (user is null)
-            throw new BadHttpRequestException("Invalid username or password!");
+            throw new UnauthorizedException(EnumAuthError.LoginOrPassword);
         
         if (!ComparePassword(request.Password, user.Password))
-            throw new BadHttpRequestException("Invalid username or password!");
+            throw new UnauthorizedException(EnumAuthError.LoginOrPassword);
 
         var token = _tokenService.GenerateToken(user);
 

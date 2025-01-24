@@ -5,6 +5,7 @@ using Fintech.Enums;
 using Fintech.Exceptions;
 using Fintech.Interfaces;
 using Fintech.Utils;
+using Fintech.Utils.Base;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ namespace Fintech.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class DespesasController : ControllerBase
+public class DespesasController : FinController
 {
     private readonly DataContext _context;
     private readonly IDespesasService _despesasService;
@@ -34,9 +35,9 @@ public class DespesasController : ControllerBase
 
             return Ok(despesas);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return BadRequest(e.Message);
+            return HandleException(ex);
         }
     }
 
@@ -52,9 +53,9 @@ public class DespesasController : ControllerBase
             ;
             return Ok(despesa);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return BadRequest(e.Message);
+            return HandleException(ex);
         }
     }
     
@@ -69,7 +70,7 @@ public class DespesasController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return HandleException(ex);
         }
     }
 
@@ -84,7 +85,7 @@ public class DespesasController : ControllerBase
         }
         catch (Exception ex)
         {
-            return BadRequest(ex.Message);
+            return HandleException(ex);
         }
     }
 
@@ -97,14 +98,9 @@ public class DespesasController : ControllerBase
 
             return NoContent();
         }
-        catch (BadRequestException ex)
+        catch (Exception ex)
         {
-            return BadRequest(new BadRequestResponse
-            {
-                Message = ex.Message,
-                Data = ex.Data,
-                Details = ex.Details
-            });
+            return HandleException(ex);
         }
     }
 }

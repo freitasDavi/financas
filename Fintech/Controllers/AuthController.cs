@@ -1,13 +1,14 @@
 ﻿using Fintech.DTOs.Requests;
 using Fintech.DTOs.Responses;
 using Fintech.Interfaces;
+using Fintech.Utils.Base;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Fintech.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : FinController
 {
     private readonly IAuthService _authService;
 
@@ -30,7 +31,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            return HandleException(e);
         }
     }
 
@@ -47,7 +48,7 @@ public class AuthController : ControllerBase
         }
         catch (Exception e)
         {
-            return BadRequest(e.Message);
+            return HandleException(e);
         }
     }
 }

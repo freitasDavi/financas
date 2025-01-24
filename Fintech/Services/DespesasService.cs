@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Fintech.DTOs.DTO;
+﻿using Fintech.DTOs.DTO;
 using Fintech.DTOs.Requests;
 using Fintech.Entities;
 using Fintech.Exceptions;
@@ -34,7 +33,7 @@ public class DespesasService : IDespesasService
     }
     public async Task Create(NovaDespesaRequest request)
     {
-        var token = _httpContextAccessor.HttpContext.Items["UserToken"] as TokenDTO;
+        var token = _httpContextAccessor.HttpContext!.Items["UserToken"] as TokenDTO;
 
         var despesa = new Despesas
         {
@@ -54,7 +53,7 @@ public class DespesasService : IDespesasService
         var despesa = await GetByIdWithTracking(id);
 
         if (despesa == null)
-            throw new BadHttpRequestException("Expense not found.");
+            throw new NotFoundException("Expense");
         
         despesa.Data = request.Data;
         despesa.Valor = request.Valor;
@@ -70,7 +69,7 @@ public class DespesasService : IDespesasService
         var despesa = await GetByIdWithTracking(id);
 
         if (despesa == null)
-            throw new BadRequestException("Expense not found!", $"Despesa not found for id {id}");
+            throw new NotFoundException("Expense not found!");
 
         _context.Despesas.Remove(despesa);
         await _context.SaveChangesAsync();
