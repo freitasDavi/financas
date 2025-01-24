@@ -48,6 +48,7 @@ public class DespesasController : ControllerBase
             Nome = request.Nome,
             FormaDePagamento = request.FormaDePagamento,
             Origem = request.Origem,
+            CodigoUsuario = 1,
         };
 
         await _context.Despesas.AddAsync(despesa);
