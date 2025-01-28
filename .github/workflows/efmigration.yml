@@ -1,0 +1,39 @@
+name: Deploy application with EF Migrations
+
+on:
+  push:
+#    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore Fintech.sln
+
+      - name: Build
+        run: dotnet build Fintech.sln --configuration Release --no-restore -o ${{env.DOTNET_ROOT}}/myapp
+
+      - name: Create EF Migration bundle
+        run: |
+          dotnet tool install --global dotnet-ef
+          dotnet ef migrations bundle --project Fintech/Fintech.csproj --output efbundle
+
+        name: Run EF Migrations
+        run: ./efbundle --conection "${{ secrets.DB_CONNECTION_STRING }}"
+
+      - name: Deploy to azure web app
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: FintechAPI
+          slot-name: "Production"
+          publish-profile: ${{ secrets.AZURE_FINTECH_API_PUBLISH_PROFILE }}
+          package: ${{env.DOTNET_ROOT}}/myapp

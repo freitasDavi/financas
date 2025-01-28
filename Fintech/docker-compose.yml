@@ -1,0 +1,39 @@
+services:
+  api:
+    container_name: fin-api
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 8080:8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - fin-network
+    depends_on:
+      database:
+        condition: service_healthy
+  database:
+    image: bitnami/postgresql
+    environment:
+      - "POSTGRESQL_PASSWORD=fin321!"
+      - "POSTGRESQL_DATABASE=fintechdb"
+      - "POSTGRESQL_USERNAME=fintechadmin"
+    volumes:
+      - "fintech-database-volume:/bitnami/postgresql"
+    ports:
+      - 5432:5432
+    networks:
+      - fin-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fintechadmin -d fintechdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  fintech-database-volume:
+
+networks:
+  fin-network:
+    driver: bridge

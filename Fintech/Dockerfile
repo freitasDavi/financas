@@ -1,23 +1,16 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER $APP_UID
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
 WORKDIR /app
+
+# COPIA TUDO DA PASTA ATUAL PARA A PASTA -> app do container
+COPY . ./
+RUN dotnet restore 
+RUN dotnet publish -c Release -o out
+
+# Joga tudo que tinha antes fora e começa do zero
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /runtime-app
+# Copia do ambiente de build-env -> da pasta /app/out -> pra raiz .
+COPY --from=build-env /app/out .
+
 EXPOSE 8080
-EXPOSE 8081
-
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["Fintech/Fintech.csproj", "Fintech/"]
-RUN dotnet restore "Fintech/Fintech.csproj"
-COPY . .
-WORKDIR "/src/Fintech"
-RUN dotnet build "Fintech.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Fintech.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Fintech.dll"]
+ENTRYPOINT [ "dotnet", "Fintech.dll" ]
