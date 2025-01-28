@@ -27,7 +27,7 @@ jobs:
           dotnet tool install --global dotnet-ef
           dotnet ef migrations bundle --project Fintech/Fintech.csproj --output efbundle
 
-        name: Run EF Migrations
+      - name: Run EF Migrations
         run: ./efbundle --conection "${{ secrets.DB_CONNECTION_STRING }}"
 
       - name: Deploy to azure web app
