@@ -11,6 +11,17 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+var cors = "allowedOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: cors, policy =>
+    {
+        policy.WithHeaders("Content-Type", "Authorization", "only-if-cached");
+        policy.AllowAnyMethod();
+        policy.WithOrigins("http://localhost:5173");
+    });
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -68,7 +79,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors(cors);
 app.UseMiddleware<TokenAuthenticationMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
