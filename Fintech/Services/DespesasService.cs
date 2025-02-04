@@ -1,5 +1,6 @@
 ﻿using Fintech.DTOs.DTO;
 using Fintech.DTOs.Requests;
+using Fintech.DTOs.Requests.Despesas;
 using Fintech.Entities;
 using Fintech.Exceptions;
 using Fintech.Interfaces;
@@ -21,9 +22,17 @@ public class DespesasService : IDespesasService
         _httpContextAccessor = httpContextAccessor;
     }
     
-    public async Task<ICollection<Despesas>> GetAll()
+    public async Task<ICollection<Despesas>> GetAll(GetDespesasFiltroRequest filtros)
     {
-        return await _context.Despesas.AsNoTracking().ToListAsync();
+        var query =  _context.Despesas.AsNoTracking();
+
+        if (filtros.nome is not null)
+            query = query.Where(desp => desp.Nome.Contains(filtros.nome));
+        
+        if (filtros.mes is not null)
+            query = query.Where(desp => desp.Data.Month == filtros.mes);
+        
+        return await query.ToListAsync();
     }
     public async Task<Despesas?> GetById(long id)
     {
@@ -79,4 +88,6 @@ public class DespesasService : IDespesasService
     {
         return await _context.Despesas.FirstOrDefaultAsync(x => x.Id == id);
     }
+    
+    
 }

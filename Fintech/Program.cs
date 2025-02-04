@@ -63,6 +63,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDespesasService, DespesasService>();
+builder.Services.AddScoped<IDespesaParceladaService, DespesaParceladaService>();
 builder.Services.AddTransient<TokenAuthenticationMiddleware>();
 
 var app = builder.Build();
@@ -73,9 +74,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
     
-    await using var serviceScope = app.Services.CreateAsyncScope();
-    await using var dbContext = serviceScope.ServiceProvider.GetRequiredService<DataContext>();
-    await dbContext.Database.MigrateAsync();
+    // await using var serviceScope = app.Services.CreateAsyncScope();
+    // await using var dbContext = serviceScope.ServiceProvider.GetRequiredService<DataContext>();
+    // await dbContext.Database.MigrateAsync();
 }
 
 app.UseHttpsRedirection();

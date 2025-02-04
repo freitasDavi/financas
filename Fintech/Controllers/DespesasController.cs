@@ -1,4 +1,5 @@
 ﻿using Fintech.DTOs.Requests;
+using Fintech.DTOs.Requests.Despesas;
 using Fintech.DTOs.Responses;
 using Fintech.Entities;
 using Fintech.Enums;
@@ -27,11 +28,11 @@ public class DespesasController : FinController
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<Despesas>>> Get()
+    public async Task<ActionResult<List<Despesas>>> Get([FromQuery] GetDespesasFiltroRequest filtros)
     {
         try
         {
-            var despesas = await _despesasService.GetAll();
+            var despesas = await _despesasService.GetAll(filtros);
 
             return Ok(despesas);
         }
