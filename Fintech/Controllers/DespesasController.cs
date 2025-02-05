@@ -26,8 +26,23 @@ public class DespesasController : FinController
         _context = context;
         _despesasService = despesasService;
     }
+    
+    [HttpGet("proximas")]
+    public async Task<ActionResult<GraficosBaseResponse>> GetProximas()
+    {
+        try
+        {
+            var response = await _despesasService.GetValoresProximosMeses();
+            
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return HandleException(ex);
+        }
+    }
 
-    [HttpGet]
+    [HttpGet("all")]
     public async Task<ActionResult<List<Despesas>>> Get([FromQuery] GetDespesasFiltroRequest filtros)
     {
         try
@@ -104,4 +119,6 @@ public class DespesasController : FinController
             return HandleException(ex);
         }
     }
+
+
 }

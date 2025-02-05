@@ -1,6 +1,8 @@
-﻿using Fintech.DTOs.DTO;
+﻿using System.Globalization;
+using Fintech.DTOs.DTO;
 using Fintech.DTOs.Requests;
 using Fintech.DTOs.Requests.Despesas;
+using Fintech.DTOs.Responses;
 using Fintech.Entities;
 using Fintech.Exceptions;
 using Fintech.Interfaces;
@@ -88,6 +90,30 @@ public class DespesasService : IDespesasService
     {
         return await _context.Despesas.FirstOrDefaultAsync(x => x.Id == id);
     }
-    
+
+    public async Task<GraficosBaseResponse> GetValoresProximosMeses()
+    {
+        var token = _httpContextAccessor.HttpContext!.Items["UserToken"] as TokenDTO;
+        var despesas = await _context.Despesas.AsNoTracking()
+            .Where(d => d.CodigoUsuario == token.Id)
+            .Where(d => d.Data.Month >= DateTime.Now.Month && d.Data.Year == DateTime.Now.Year && d.Data.Month < DateTime.Now.AddMonths(6).Month)
+            .ToListAsync();
+
+        var despesasProximosMeses = new GraficosBaseResponse
+        {
+            Descriptions = despesas.Select(d => d.Data.ToString("MMMM"))
+                .Distinct()
+                .OrderBy(m => DateTime.ParseExact(m, "MMMM", new CultureInfo("pt-BR")).Month)
+                .ToList(),
+            Values = despesas
+                .GroupBy(d => d.Data.Month)
+                .OrderBy(g => g.Key)
+                .Select(g => g.Sum(d => d.Valor))
+                .ToList()
+        };
+
+        
+        return despesasProximosMeses;
+    }
     
 }

@@ -3,6 +3,7 @@ using Fintech.Interfaces;
 using Fintech.Middlewares;
 using Fintech.Services;
 using Fintech.Utils;
+using Fintech.Utils.Workers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -64,7 +65,10 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDespesasService, DespesasService>();
 builder.Services.AddScoped<IDespesaParceladaService, DespesaParceladaService>();
+builder.Services.AddScoped<IDespesaProgramadaService, DespesaProgramadaService>();
 builder.Services.AddTransient<TokenAuthenticationMiddleware>();
+
+builder.Services.AddHostedService<DespesasProgramadasWorker>();
 
 var app = builder.Build();
 

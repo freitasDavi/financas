@@ -1,5 +1,4 @@
 ﻿using Fintech.DTOs.DTO;
-using Fintech.DTOs.Requests;
 using Fintech.DTOs.Requests.Parceladas;
 using Fintech.Entities;
 using Fintech.Enums;
@@ -11,13 +10,11 @@ namespace Fintech.Services;
 public class DespesaParceladaService : IDespesaParceladaService
 {
     private readonly DataContext _context;
-    private readonly IDespesasService _despesasService;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public DespesaParceladaService(DataContext context, IDespesasService despesasService, IHttpContextAccessor httpContextAccessor)
+    public DespesaParceladaService(DataContext context, IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
-        _despesasService = despesasService;
         _httpContextAccessor = httpContextAccessor;
     }
 

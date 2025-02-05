@@ -3,6 +3,7 @@ using System;
 using Fintech.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Fintech.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250204114918_RemovedDateFromProgramada")]
+    partial class RemovedDateFromProgramada
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,7 +70,7 @@ namespace Fintech.Migrations
                     b.Property<long>("CodigoUsuario")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime?>("DataFinal")
+                    b.Property<DateTime>("DataFinal")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DataInicial")
