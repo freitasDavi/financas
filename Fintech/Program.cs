@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Fintech.Interfaces;
 using Fintech.Middlewares;
 using Fintech.Services;
@@ -6,6 +7,7 @@ using Fintech.Utils;
 using Fintech.Utils.Workers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -81,6 +83,17 @@ if (app.Environment.IsDevelopment())
     // await using var serviceScope = app.Services.CreateAsyncScope();
     // await using var dbContext = serviceScope.ServiceProvider.GetRequiredService<DataContext>();
     // await dbContext.Database.MigrateAsync();
+    
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            var error = context.Features.Get<IExceptionHandlerFeature>();
+            await context.Response.WriteAsJsonAsync(new { error = error?.Error.Message });
+        });
+    });
 }
 
 app.UseHttpsRedirection();

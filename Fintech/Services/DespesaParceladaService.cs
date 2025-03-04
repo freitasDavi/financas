@@ -4,6 +4,7 @@ using Fintech.Entities;
 using Fintech.Enums;
 using Fintech.Interfaces;
 using Fintech.Utils;
+using Microsoft.EntityFrameworkCore;
 
 namespace Fintech.Services;
 
@@ -18,6 +19,15 @@ public class DespesaParceladaService : IDespesaParceladaService
         _httpContextAccessor = httpContextAccessor;
     }
 
+    public async Task<List<DespesaParcelada>> GetAllParcelasParcelada()
+    {
+        var token = _httpContextAccessor.HttpContext!.Items["UserToken"] as TokenDTO;
+
+        var despesas = await _context.DespesaParcelada.Where(dp => dp.CodigoUsuario == token.Id).ToListAsync();
+        
+        return despesas;
+    }
+    
     public async Task Create(NovaDespesaParceladaRequest request)
     {
         var token = _httpContextAccessor.HttpContext!.Items["UserToken"] as TokenDTO;

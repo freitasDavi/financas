@@ -18,6 +18,7 @@ public class DespesasProgramadasWorker : BackgroundService
             try
             {
                 // Get today's date at midnight for comparison
+                Console.WriteLine("Despesas de programadas");
                 var today = DateTime.Now.Date;
 
                 using var scope = _serviceProvider.CreateScope();

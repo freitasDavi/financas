@@ -90,13 +90,16 @@ public class DespesasService : IDespesasService
     {
         return await _context.Despesas.FirstOrDefaultAsync(x => x.Id == id);
     }
-
+    
     public async Task<GraficosBaseResponse> GetValoresProximosMeses()
     {
         var token = _httpContextAccessor.HttpContext!.Items["UserToken"] as TokenDTO;
         var despesas = await _context.Despesas.AsNoTracking()
             .Where(d => d.CodigoUsuario == token.Id)
-            .Where(d => d.Data.Month >= DateTime.Now.Month && d.Data.Year == DateTime.Now.Year && d.Data.Month < DateTime.Now.AddMonths(6).Month)
+            .Where(d => 
+                d.Data.Month >= DateTime.Now.Month && 
+                d.Data.Year == DateTime.Now.Year && 
+                d.Data.Month < DateTime.Now.AddMonths(6).Month)
             .ToListAsync();
 
         var despesasProximosMeses = new GraficosBaseResponse
